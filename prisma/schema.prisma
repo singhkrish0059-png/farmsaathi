@@ -1,106 +1,152 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
-enum Role { BUYER FARMER ADMIN }
-enum Verification { PENDING VERIFIED REJECTED SUSPENDED }
-enum Availability { AVAILABLE OUT_OF_STOCK INACTIVE }
-enum EnquiryStatus { NEW CONTACTED CLOSED }
-enum ComplaintStatus { OPEN INVESTIGATING RESOLVED DISMISSED }
-model User {
-  id String @id @default(cuid())
-  name String
-  email String @unique
-  phone String
-  passwordHash String
-  role Role @default(BUYER)
-  language String @default("en")
-  isDemo Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  farmer FarmerProfile?
-  enquiries Enquiry[] @relation("buyer")
-  complaints Complaint[]
-  actions AdminAction[]
+generator client {
+  provider = "prisma-client-js"
 }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  BUYER
+  FARMER
+  ADMIN
+}
+
+enum Verification {
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum Availability {
+  AVAILABLE
+  OUT_OF_STOCK
+  INACTIVE
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+enum ComplaintStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  phone        String
+  passwordHash String
+  role         Role           @default(BUYER)
+  language     String         @default("en")
+  isDemo       Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  farmer       FarmerProfile?
+  enquiries    Enquiry[]      @relation("buyer")
+  complaints   Complaint[]
+  actions      AdminAction[]
+}
+
 model FarmerProfile {
-  id String @id @default(cuid())
-  userId String @unique
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  village String
-  district String
-  state String
-  farmLocation String?
-  latitude Float?   // reserved for GPS/radius search
-  longitude Float?
-  farmingType String
-  farmingExperience Int
-  bio String @default("")
-  profileImage String?
-  verificationStatus Verification @default(PENDING)
-  verificationDocument String? // private path, admin-only
-  rejectionReason String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  products Product[]
-  enquiries Enquiry[]
-  complaints Complaint[]
+  id                   String       @id @default(cuid())
+  userId               String       @unique
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  village              String
+  district             String
+  state                String
+  farmLocation         String?
+  latitude             Float?
+  longitude            Float?
+  farmingType          String
+  farmingExperience    Int
+  bio                  String       @default("")
+  profileImage         String?
+  verificationStatus   Verification @default(PENDING)
+  verificationDocument String?
+  rejectionReason      String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  products             Product[]
+  enquiries            Enquiry[]
+  complaints           Complaint[]
+
   @@index([district, state])
 }
-model ProductCategory { id String @id @default(cuid()); name String @unique; products Product[] }
+
+model ProductCategory {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
 model Product {
-  id String @id @default(cuid())
-  farmerId String
-  farmer FarmerProfile @relation(fields: [farmerId], references: [id], onDelete: Cascade)
-  categoryId String
-  category ProductCategory @relation(fields: [categoryId], references: [id])
-  name String
-  description String
-  price Float
-  unit String
-  quantityAvailable Float
-  location String
-  images String[]
-  availabilityStatus Availability @default(AVAILABLE)
-  isDemo Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  enquiries Enquiry[]
-  complaints Complaint[]
+  id                 String          @id @default(cuid())
+  farmerId           String
+  farmer             FarmerProfile   @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  categoryId         String
+  category           ProductCategory @relation(fields: [categoryId], references: [id])
+  name               String
+  description        String
+  price              Float
+  unit               String
+  quantityAvailable  Float
+  location           String
+  images             String[]
+  availabilityStatus Availability    @default(AVAILABLE)
+  isDemo             Boolean         @default(false)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  enquiries          Enquiry[]
+  complaints         Complaint[]
+
   @@index([name])
 }
+
 model Enquiry {
-  id String @id @default(cuid())
-  buyerId String
-  buyer User @relation("buyer", fields: [buyerId], references: [id])
-  farmerId String
-  farmer FarmerProfile @relation(fields: [farmerId], references: [id])
+  id        String        @id @default(cuid())
+  buyerId   String
+  buyer     User          @relation("buyer", fields: [buyerId], references: [id])
+  farmerId  String
+  farmer    FarmerProfile @relation(fields: [farmerId], references: [id])
   productId String
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  message String
-  status EnquiryStatus @default(NEW)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  message   String
+  status    EnquiryStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
+
 model Complaint {
-  id String @id @default(cuid())
+  id           String          @id @default(cuid())
   reportedById String
-  reportedBy User @relation(fields: [reportedById], references: [id])
-  farmerId String
-  farmer FarmerProfile @relation(fields: [farmerId], references: [id])
-  productId String?
-  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  reason String
-  description String
-  status ComplaintStatus @default(OPEN)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  reportedBy   User            @relation(fields: [reportedById], references: [id])
+  farmerId     String
+  farmer       FarmerProfile   @relation(fields: [farmerId], references: [id])
+  productId    String?
+  product      Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  reason       String
+  description  String
+  status       ComplaintStatus @default(OPEN)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
+
 model AdminAction {
-  id String @id @default(cuid())
-  adminId String
-  admin User @relation(fields: [adminId], references: [id])
-  action String
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation(fields: [adminId], references: [id])
+  action     String
   targetType String
-  targetId String
-  note String?
-  createdAt DateTime @default(now())
+  targetId   String
+  note       String?
+  createdAt  DateTime @default(now())
 }

@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
-export const wa = (phone: string, name: string) => `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hello, I found your product on FarmSaathi. I am interested in your ${name}. Is it currently available?`)}`;
+import { wa } from "@/lib/utils";
+export { wa };
 export default function ProductCard({ p }: { p: any }) {
   const { t } = useT();
   return (

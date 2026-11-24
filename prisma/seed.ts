@@ -10,6 +10,29 @@ const items: [string, string, number, string][] = [["Ragi (Finger Millet)", "Gra
   ["Cow Dung Manure", "Natural Fertilizers", 8, "kg"], ["Organic Compost", "Natural Fertilizers", 12, "kg"], ["Bio-fertilizer (Rhizobium)", "Natural Fertilizers", 120, "litre"],
   ["Ragi Seeds", "Seeds", 80, "kg"], ["Brinjal", "Vegetables", 32, "kg"], ["Jowar", "Grains", 48, "kg"], ["Mangoes (Totapuri)", "Fruits", 60, "kg"], ["Onions", "Vegetables", 30, "kg"],
   ["Coorg Honey", "Organic Products", 450, "kg"], ["Turmeric Powder", "Organic Products", 160, "kg"], ["Coconut", "Fruits", 25, "piece"], ["Tur Dal", "Grains", 130, "kg"], ["Green Chilli", "Vegetables", 50, "kg"]];
+
+const itemImages: Record<string, string[]> = {
+  "Ragi (Finger Millet)": ["/products/ragi.jpg"],
+  "Sona Masoori Rice": ["/products/rice.jpg"],
+  "Tomatoes": ["/products/tomatoes.jpg"],
+  "Robusta Bananas": ["/products/bananas.jpg"],
+  "Groundnuts": ["/products/groundnuts.jpg"],
+  "Organic Vermicompost": ["/products/vermicompost.jpg"],
+  "Neem Cake": ["/products/neem-cake.jpg"],
+  "Cow Dung Manure": ["/products/cow-dung-manure.jpg"],
+  "Organic Compost": ["/products/organic-compost.jpg"],
+  "Bio-fertilizer (Rhizobium)": ["/products/bio-fertilizer.jpg"],
+  "Ragi Seeds": ["/products/ragi-seeds.jpg"],
+  "Brinjal": ["/products/brinjal.jpg"],
+  "Jowar": ["/products/jowar.jpg"],
+  "Mangoes (Totapuri)": ["/products/mangoes.jpg"],
+  "Onions": ["/products/onions.jpg"],
+  "Coorg Honey": ["/products/honey.jpg"],
+  "Turmeric Powder": ["/products/turmeric.jpg"],
+  "Coconut": ["/products/coconut.jpg"],
+  "Tur Dal": ["/products/tur-dal.jpg"],
+  "Green Chilli": ["/products/green-chilli.jpg"]
+};
 async function main() {
   const pw = await bcrypt.hash(process.env.DEMO_PASSWORD ?? "demo-pass-123", 10);
   const C: Record<string, string> = {};
@@ -27,7 +50,7 @@ async function main() {
   if (!(await db.product.count({ where: { isDemo: true } })))
     for (const [i, [name, cat, price, unit]] of items.entries()) { const f = farmers[i % 10];
       await db.product.create({ data: { name, categoryId: C[cat], price, unit, quantityAvailable: 50 + i * 10, farmerId: f.id, location: `${f.village}, ${f.district}`,
-        description: `Demo Data: fresh ${name.toLowerCase()} directly from the farm.`, isDemo: true, images: [] } }); }
+        description: `Demo Data: fresh ${name.toLowerCase()} directly from the farm.`, isDemo: true, images: itemImages[name] || [] } }); }
   const buyer = await db.user.upsert({ where: { email: "buyer@demo.farmsaathi.test" }, update: {}, create: { name: "Demo Buyer", email: "buyer@demo.farmsaathi.test", phone: "+919999900100", passwordHash: pw, isDemo: true } });
   if (!(await db.enquiry.count()))
     for (const p of await db.product.findMany({ take: 5, where: { isDemo: true } }))

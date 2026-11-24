@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import EnquiryForm from "@/components/EnquiryForm";
-import { wa } from "@/components/ProductCard";
+import { wa } from "@/lib/utils";
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const p = await db.product.findUnique({ where: { id: params.id }, include: { category: true, farmer: { include: { user: { select: { name: true, phone: true } } } } } });
   if (!p || p.farmer.verificationStatus !== "VERIFIED") notFound();
